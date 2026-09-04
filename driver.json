@@ -1,0 +1,39 @@
+{
+  "driver_id": "uc_intg_rainbird",
+  "version": "1.0.0",
+  "min_core_api": "0.22.0",
+  "name": {
+    "en": "Rain Bird"
+  },
+  "icon": "uc:leaf",
+  "description": {
+    "en": "Control Rain Bird irrigation controllers with an LNK Wi-Fi module over your local network. Start and stop each watering zone, set a rain delay, and monitor the rain sensor and the currently running zone. No Rain Bird cloud account is required - control is entirely local."
+  },
+  "developer": {
+    "name": "Meir Miyara",
+    "email": "meir.miyara@gmail.com",
+    "url": "https://github.com/mase1981"
+  },
+  "home_page": "https://github.com/mase1981/uc-intg-rainbird",
+  "release_date": "2026-09-04",
+  "setup_data_schema": {
+    "title": {
+      "en": "Rain Bird Controller Setup"
+    },
+    "settings": [
+      {
+        "id": "info",
+        "label": {
+          "en": "Rain Bird Controller"
+        },
+        "field": {
+          "label": {
+            "value": {
+              "en": "On the next screen, enter the IP address and device password of your Rain Bird LNK Wi-Fi module. The password is the one you set in the Rain Bird app. The controller must be powered on and connected to your network."
+            }
+          }
+        }
+      }
+    ]
+  }
+}
