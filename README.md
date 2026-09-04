@@ -91,8 +91,19 @@ docker run -d --name uc-intg-rainbird --restart unless-stopped --network host -v
 ## Configuration
 
 1. Make sure your Rain Bird controller is **powered on** and on the same network as the Remote.
-2. Start setup and enter the controller's **IP address**, its **device password** (from the Rain Bird app), and a **default watering time** in minutes.
+2. Start setup and enter the controller's **IP address**, its **device password**, and a **default watering time** in minutes.
 3. Repeat setup to add additional controllers.
+
+### Setup fields
+
+**Host**
+The IP address of your Rain Bird device. You can find the IP address under the device in the Rain Bird app under Controller Settings > Network Info.
+
+**Password**
+The controller password, which you set when the Rain Bird WiFi controller was first configured. This is not the password for your Rain Bird account. It is 4-8 letters or numbers; if you set it up with the Rain Bird 2.0 app, it is the 6-digit PIN.
+
+**Default watering time**
+How long a zone runs (in minutes) when you turn its switch on.
 
 For each device the integration creates:
 
