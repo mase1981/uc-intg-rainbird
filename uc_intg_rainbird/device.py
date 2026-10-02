@@ -61,17 +61,16 @@ class RainbirdDevice(PollingDevice):
         return self._device_config.default_duration
 
     async def establish_connection(self) -> RainbirdClient:
+        # Never raise when the controller is unreachable: the framework does not
+        # retry a failed connect, which would leave entities unavailable until
+        # the Remote reconnects. Polling keeps running and reconnects instead.
         async with self._connect_lock:
             if self._client is None:
                 self._client = RainbirdClient(self._device_config.host, self._device_config.password)
-            if not self._client.is_connected:
-                await self._client.connect()
-
-            zones = await self._client.get_available_zones()
-            if zones:
-                self.zones = zones
-                if zones != self._device_config.zones:
-                    self.update_config(zones=zones)
+            if not await self._connect_locked():
+                _LOG.warning("[%s] Controller unreachable, will keep retrying", self.log_id)
+                self._state = STATE_UNAVAILABLE
+                return self._client
 
             try:
                 await self._read_state()
@@ -81,12 +80,38 @@ class RainbirdDevice(PollingDevice):
             self._state = STATE_ON
             return self._client
 
+    async def _connect_locked(self) -> bool:
+        """Connect the client and refresh zones. Caller MUST hold ``self._connect_lock``."""
+        assert self._client is not None
+        if not self._client.is_connected:
+            try:
+                await self._client.connect()
+            except Exception as err:  # pylint: disable=broad-exception-caught
+                _LOG.debug("[%s] Connect failed: %s", self.log_id, err)
+                return False
+
+        try:
+            zones = await self._client.get_available_zones()
+        except Exception as err:  # pylint: disable=broad-exception-caught
+            # Zones are stored in the config; keep using them.
+            _LOG.debug("[%s] Zone query failed: %s", self.log_id, err)
+            return True
+        if zones:
+            self.zones = zones
+            if zones != self._device_config.zones:
+                self.update_config(zones=zones)
+        return True
+
     async def poll_device(self) -> None:
         if self._client is None:
             return
         try:
             async with self._connect_lock:
+                if not self._client.is_connected and not await self._connect_locked():
+                    raise ConnectionError("Controller unreachable")
                 await self._read_state()
+            # A successful poll always restores availability after an error.
+            self._state = STATE_ON
             self.push_update()
         except Exception as err:  # pylint: disable=broad-exception-caught
             _LOG.debug("[%s] Poll error: %s", self.log_id, err)
